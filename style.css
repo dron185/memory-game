@@ -1,3 +1,5 @@
+/* ========= Базовые стили =============== */
+
 *,
 *::before,
 *::after {
@@ -7,46 +9,69 @@
     box-sizing: border-box;
 }
 
-a {
-    text-decoration: none;
-    color: inherit;
-}
-
-ul, ol, li {
-    list-style: none;
-}
-
-img {
-    vertical-align: top;
-}
-
 h1, h2, h3, h4, h5, h6 {
     font-size: inherit;
     font-weight: inherit;
 }
 
-input, button {
-    border: none;
-    font-family: inherit;
-    font-size: inherit;
-}
-
-html, body {
-    height: 100%;
+body {
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    color: #403f3d;
     scroll-behavior: smooth;
+    /*background: radial-gradient(circle at 50% 0%, #2b3355 0%, #141824 55%, #0d1017 100%);*/
+    background-color: #aa7859;
 }
 
+/*.wrapper {*/
+/*    display: flex;*/
+/*    flex-direction: column;*/
+/*    min-height: 100%;*/
+/*    max-width: 1440px;*/
+/*    margin: 0 auto;*/
+/*    overflow: hidden;*/
+/*}*/
 
-.wrapper {
-    display: flex;
-    flex-direction: column;
-    min-height: 100%;
-    max-width: 1440px;
-    margin: 0 auto;
+/*.main {*/
+/*    flex: 1 1 auto;*/
+/*}*/
+
+body.modal-open {
     overflow: hidden;
 }
 
-.main {
-    flex: 1 1 auto;
+/* =========================================================
+   Каркас приложения
+   ======================================================= */
+
+.app {
+    max-width: 880px;
+    margin: 0 auto;
+    padding: 24px 16px 56px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+/* --- Хедер --- */
+
+.header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.header__title {
+    margin: 0;
+    font-size: clamp(1.3rem, 4vw, 1.7rem);
+    letter-spacing: 0.02em;
+}
+
+.header__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
 }
 
