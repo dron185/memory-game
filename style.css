@@ -106,3 +106,39 @@ body.modal-open {
     border-color: #0d5c63;
 }
 
+/* --- Основная область --- */
+
+.main {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* --- Счётчики --- */
+
+.stats {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 14px;
+}
+
+.stats__item {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    padding: 10px 18px;
+    border-radius: 12px;
+    background: #38506c;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: #fff;
+}
+
+.stats__label {
+}
+
+.stats__value {
+    font-weight: 700;
+    font-size: 1.05rem;
+}
+

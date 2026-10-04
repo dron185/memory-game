@@ -99,8 +99,120 @@ pairsStat.append(createEl('span', 'stats__label', 'Найдено пар:'), pai
 
 stats.append(statsItem, pairsStat);
 
+/* --- Игровое поле --- */
 
+const board = createEl('div', 'board');
 
-main.append(stats);
+main.append(stats, board);
 appRoot.append(header, main);
 document.body.append(appRoot);
+
+/** Блокировка фонового содержимого, пока открыто модальное окно. */
+function setBackgroundInert(isInert) {
+    appRoot.inert = Boolean(isInert);
+}
+
+/* ============== Функция создания модального окна =================== */
+
+/**
+ * Создаёт модальное окно с общим поведением:
+ * закрытие по кнопке, клику по фону и Escape,
+ * блокировка прокрутки и фонового содержимого.
+ */
+
+function createModal(options) {
+    const settings = options || {};
+
+    const overlay = createEl('div', 'modal-overlay');
+    overlay.hidden = true;
+
+    const modal = createEl('div', 'modal');
+    modal.setAttribute('role', 'dialog');
+    modal.setAttribute('aria-modal', 'true');
+
+    const content = createEl('div', 'modal__content');
+    const actions = createEl('div', 'modal__actions');
+
+    const closeButton = createButton('Закрыть', 'btn btn--secondary');
+    actions.append(closeButton);
+
+    modal.append(content, actions);
+    overlay.append(modal);
+    document.body.append(overlay);
+
+    let opened = false;
+    let lastFocused = null;
+
+    function open() {
+        if (opened) {
+            return;
+        }
+        opened = true;
+        lastFocused = document.activeElement;
+        overlay.hidden = false;
+        document.body.classList.add('modal-open');
+        setBackgroundInert(true);
+        closeButton.focus();
+    }
+
+    function close() {
+        if (!opened) {
+            return;
+        }
+        opened = false;
+        overlay.hidden = true;
+        document.body.classList.remove('modal-open');
+        setBackgroundInert(false);
+
+        if (lastFocused && typeof lastFocused.focus === 'function' && document.contains(lastFocused)) {
+            lastFocused.focus();
+        }
+        lastFocused = null;
+
+        if (typeof settings.onClose === 'function') {
+            settings.onClose();
+        }
+    }
+
+    closeButton.addEventListener('click', close);
+
+    overlay.addEventListener('click', (event) => {
+        if (event.target === overlay) {
+            close();
+        }
+    });
+
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && opened) {
+            event.preventDefault();
+            close();
+        }
+    });
+
+    return {
+        overlay: overlay,
+        dialog: modal,
+        content: content,
+        actions: actions,
+        open: open,
+        close: close,
+        isOpen: function () {
+            return opened;
+        }
+    };
+}
+
+/* --- Модальное окно победы --- */
+
+const winModal = createModal();
+
+const winNewGameButton = createButton('Новая игра', 'btn btn--primary', () => {
+    winModal.close();
+    startNewGame();
+});
+winModal.actions.prepend(winNewGameButton);
+
+/* --- Модальное окно таблицы лидеров --- */
+
+const leaderboardModal = createModal();
+
