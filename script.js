@@ -68,3 +68,39 @@ function wordDeclension(count) {
     return 'ходов';
 }
 
+/** =========== Каркас приложения ====================== */
+
+const appRoot = createEl('div', 'wrapper');
+
+/* --- Хедер --- */
+
+const header = createEl('header', 'header');
+const headerTitle = createEl('h1', 'header__title', 'Memory Game');
+const headerActions = createEl('div', 'header__actions');
+const newGameButton = createButton('Новая игра', 'btn btn--primary');
+const leaderboardButton = createButton('Таблица лидеров', 'btn btn--secondary');
+
+headerActions.append(newGameButton, leaderboardButton);
+header.append(headerTitle, headerActions);
+
+/* --- Счётчики --- */
+
+const main = createEl('main', 'main');
+const stats = createEl('div', 'stats');
+
+const statsItem = createEl('div', 'stats__item');
+const statsValue = createEl('span', 'stats__value', '0');
+
+statsItem.append(createEl('span', 'stats__label', 'Ходы:'), statsValue);
+
+const pairsValue = createEl('span', 'stats__value', '0 / ' + TOTAL_PAIRS);
+const pairsStat = createEl('div', 'stats__item');
+pairsStat.append(createEl('span', 'stats__label', 'Найдено пар:'), pairsValue);
+
+stats.append(statsItem, pairsStat);
+
+
+
+main.append(stats);
+appRoot.append(header, main);
+document.body.append(appRoot);

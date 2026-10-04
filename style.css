@@ -17,24 +17,12 @@ h1, h2, h3, h4, h5, h6 {
 body {
     font-family: 'Inter', sans-serif;
     font-weight: 600;
-    color: #403f3d;
+    color: #252b42;
     scroll-behavior: smooth;
-    /*background: radial-gradient(circle at 50% 0%, #2b3355 0%, #141824 55%, #0d1017 100%);*/
-    background-color: #aa7859;
+    /*background-color: #bc9f8d;*/
+    background-color: #aaa9a9;
 }
 
-/*.wrapper {*/
-/*    display: flex;*/
-/*    flex-direction: column;*/
-/*    min-height: 100%;*/
-/*    max-width: 1440px;*/
-/*    margin: 0 auto;*/
-/*    overflow: hidden;*/
-/*}*/
-
-/*.main {*/
-/*    flex: 1 1 auto;*/
-/*}*/
 
 body.modal-open {
     overflow: hidden;
@@ -42,7 +30,7 @@ body.modal-open {
 
 /* ============= Каркас приложения ==================== */
 
-.app {
+.wrapper {
     max-width: 880px;
     margin: 0 auto;
     padding: 24px 16px 56px;
@@ -62,14 +50,59 @@ body.modal-open {
 }
 
 .header__title {
+    color: #0d5c63;
     margin: 0;
     font-size: clamp(1.3rem, 4vw, 1.7rem);
     letter-spacing: 0.02em;
+    font-weight: 700;
 }
 
 .header__actions {
     display: flex;
     flex-wrap: wrap;
     gap: 10px;
+}
+
+/* --- Кнопки --- */
+
+.btn {
+    font: inherit;
+    font-size: 0.95rem;
+    line-height: 1.2;
+    padding: 10px 18px;
+    border-radius: 35px;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: all 0.35s ease 0s;
+    color: #ffffff;
+}
+
+.btn:active {
+    transform: translateY(1px);
+}
+
+.btn:focus-visible {
+    outline: 2px solid #9aa8ff;
+    outline-offset: 2px;
+}
+
+.btn--primary {
+    background: #ff7b47;
+}
+
+.btn--primary:hover {
+    background: #ffffff;
+    color: #ff7b47;
+    border-color: #ff7b47;
+}
+
+.btn--secondary {
+    background: #0d5c63;
+}
+
+.btn--secondary:hover {
+    background: #ffffff;
+    color: #0d5c63;
+    border-color: #0d5c63;
 }
 
