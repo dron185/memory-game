@@ -317,5 +317,64 @@ function cancelPendingFlip() {
     }
 }
 
+function handleCardClick(card) {
+    // Игра завершена — клики ничего не меняют.
+    if (state.isFinished) {
+        return;
+    }
+    // Открыта несовпавшая пара — другие карточки недоступны.
+    if (state.isBoardLocked) {
+        return;
+    }
+    // Повторный клик по открытой или найденной карточке игнорируется.
+    if (card.isFlipped || card.isMatched) {
+        return;
+    }
 
+    flipCard(card);
+
+    // Первая карточка хода.
+    if (state.firstCard === null) {
+        state.firstCard = card;
+        return;
+    }
+
+    // Вторая карточка хода — ход засчитан.
+    const firstCard = state.firstCard;
+    const secondCard = card;
+    state.secondCard = secondCard;
+    state.moves += 1;
+    updateStats();
+
+    if (firstCard.value === secondCard.value) {
+        // Совпадение: карточки остаются открытыми.
+        firstCard.isMatched = true;
+        secondCard.isMatched = true;
+        firstCard.element.classList.add('card--matched');
+        secondCard.element.classList.add('card--matched');
+        firstCard.element.setAttribute('aria-label', 'Найденная пара: ' + firstCard.value);
+        secondCard.element.setAttribute('aria-label', 'Найденная пара: ' + secondCard.value);
+
+        state.firstCard = null;
+        state.secondCard = null;
+        state.pairs += 1;
+        updateStats();
+
+        if (state.pairs === TOTAL_PAIRS) {
+            finishGame();
+        }
+        return;
+    }
+
+    // Несовпадение: закрываем через задержку, поле заблокировано.
+    setBoardLocked(true);
+    state.closeTimerId = window.setTimeout(() => {
+        state.closeTimerId = null;
+        hideCard(firstCard);
+        hideCard(secondCard);
+        state.firstCard = null;
+        state.secondCard = null;
+        setBoardLocked(false);
+    }, FLIP_BACK_DELAY);
+}
 
