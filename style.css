@@ -142,3 +142,25 @@ body.modal-open {
     font-size: 1.05rem;
 }
 
+/* ============== Игровое поле и карточки ================= */
+
+.board {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.board--locked .card {
+    cursor: default;
+}
+
+.card {
+    padding: 0;
+    border: none;
+    background: none;
+    aspect-ratio: 3 / 4;
+    perspective: 900px;
+    cursor: pointer;
+    border-radius: 14px;
+}
+

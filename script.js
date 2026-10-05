@@ -216,3 +216,45 @@ winModal.actions.prepend(winNewGameButton);
 
 const leaderboardModal = createModal();
 
+/* =============== Состояние игры ===================== */
+
+const state = {
+    cards: [],
+    firstCard: null,
+    secondCard: null,
+    isBoardLocked: false,
+    moves: 0,
+    pairs: 0,
+    isFinished: false,
+    closeTimerId: null
+};
+
+/* ============== Создание карточек =================== */
+
+function createCard(value) {
+    const element = createEl('button', 'card');
+    element.type = 'button';
+    element.setAttribute('aria-label', 'Закрытая карточка');
+
+    const inner = createEl('span', 'card__inner');
+    inner.setAttribute('aria-hidden', 'true');
+
+    const backFace = createEl('span', 'card__face card__face--back');
+    const frontFace = createEl('span', 'card__face card__face--front', value);
+
+    inner.append(backFace, frontFace);
+    element.append(inner);
+
+    const card = {
+        value: value,
+        element: element,
+        isFlipped: false,
+        isMatched: false
+    };
+
+    element.addEventListener('click', () => {
+        handleCardClick(card);
+    });
+
+    return card;
+}
