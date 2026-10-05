@@ -501,6 +501,21 @@ function renderLeaderboardContent() {
     content.append(table);
 }
 
+function openLeaderboardModal() {
+    renderLeaderboardContent();
+    leaderboardModal.open();
+}
 
+/* ================ Обработчики кнопок хедера ====================== */
+
+newGameButton.addEventListener('click', () => {
+    startNewGame();
+});
+
+leaderboardButton.addEventListener('click', () => {
+    openLeaderboardModal();
+});
+
+/* ============ Запуск игры ================ */
 
 startNewGame();
