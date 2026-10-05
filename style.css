@@ -234,7 +234,7 @@ body.modal-open {
     justify-content: center;
     padding: 20px;
     background: rgba(6, 9, 16, 0.72);
-    animation: overlay-in 0.18s ease;
+    animation: overlay-in 0.2s ease;
 }
 
 .modal-overlay[hidden] {
@@ -316,4 +316,14 @@ body.modal-open {
     color: #a7b0d0;
 }
 
+/* ==================== Анимации ======================= */
 
+@keyframes overlay-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes modal-in {
+    from { opacity: 0; transform: translateY(12px) scale(0.98); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
