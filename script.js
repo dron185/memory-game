@@ -401,7 +401,7 @@ function startNewGame() {
     renderBoard();
 }
 
-/* ===================== Модальное окно победы ===================== */
+/* ===================== Модальное окно победы ========================= */
 
 function showWinModal(moves) {
     const content = winModal.content;
@@ -420,3 +420,41 @@ function showWinModal(moves) {
     winModal.open();
 }
 
+/* ==================== Таблица лидеров и localStorage ==================== */
+
+function compareResults(a, b) {
+    if (a.moves !== b.moves) {
+        return a.moves - b.moves;
+    }
+    return a.date - b.date;
+}
+
+function readResults() {
+    try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) {
+            return [];
+        }
+        const parsed = JSON.parse(raw);
+        if (!Array.isArray(parsed)) {
+            return [];
+        }
+        return parsed.filter((item) => {
+            return item && typeof item.moves === 'number' && typeof item.date === 'number';
+        });
+    } catch (error) {
+        return [];
+    }
+}
+
+function writeResults(results) {
+    try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(results));
+    } catch (error) {
+        /* Хранилище недоступно — просто игнорируем. */
+    }
+}
+
+
+
+startNewGame();
