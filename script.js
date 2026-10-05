@@ -401,3 +401,22 @@ function startNewGame() {
     renderBoard();
 }
 
+/* ===================== Модальное окно победы ===================== */
+
+function showWinModal(moves) {
+    const content = winModal.content;
+    content.replaceChildren();
+
+    const title = createEl('h2', 'modal__title', 'Победа!');
+    const text = createEl('p', 'modal__text', 'Все пары найдены.');
+
+    const score = createEl('p', 'modal__score');
+    const scoreLabel = createEl('span', 'modal__score-label', 'Количество ходов: ');
+    const scoreValue = createEl('strong', 'modal__score-value', String(moves));
+    const scoreSuffix = createEl('span', 'modal__score-suffix', ' ' + wordDeclension(moves));
+    score.append(scoreLabel, scoreValue, scoreSuffix);
+
+    content.append(title, text, score);
+    winModal.open();
+}
+
