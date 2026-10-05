@@ -258,3 +258,41 @@ function createCard(value) {
 
     return card;
 }
+
+/** Колода из 16 значений (каждое — дважды), перемешанная случайно. */
+function createShuffledDeck() {
+    const values = [];
+    CARD_VALUES.forEach((value) => {
+        values.push(value, value);
+    });
+    return shuffleArray(values);
+}
+
+/* ============== Отрисовка поля и счётчиков ====================== */
+
+function renderBoard() {
+    board.replaceChildren();
+    state.cards = [];
+
+    const deck = createShuffledDeck();
+    const fragment = document.createDocumentFragment();
+
+    deck.forEach((value) => {
+        const card = createCard(value);
+        state.cards.push(card);
+        fragment.append(card.element);
+    });
+
+    board.append(fragment);
+}
+
+function updateStats() {
+    statsValue.textContent = String(state.moves);
+    pairsValue.textContent = state.pairs + ' / ' + TOTAL_PAIRS;
+}
+
+function setBoardLocked(isLocked) {
+    state.isBoardLocked = isLocked;
+    board.classList.toggle('board--locked', isLocked);
+}
+
