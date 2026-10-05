@@ -455,6 +455,52 @@ function writeResults(results) {
     }
 }
 
+/** Добавляет результат завершённой игры ровно один раз. */
+function saveResult(moves) {
+    const results = readResults();
+    results.push({ moves: moves, date: Date.now() });
+    results.sort(compareResults);
+    writeResults(results.slice(0, MAX_RESULTS));
+}
+
+function renderLeaderboardContent() {
+    const content = leaderboardModal.content;
+    content.replaceChildren();
+    content.append(createEl('h2', 'modal__title', 'Таблица лидеров'));
+
+    const results = readResults().sort(compareResults).slice(0, MAX_RESULTS);
+
+    if (results.length === 0) {
+        content.append(createEl('p', 'modal__text', 'Пока нет результатов'));
+        return;
+    }
+
+    const table = createEl('table', 'leaderboard');
+
+    const thead = createEl('thead');
+    const headRow = createEl('tr');
+    ['Место', 'Ходы', 'Дата'].forEach((label) => {
+        const th = createEl('th', 'leaderboard__head', label);
+        th.scope = 'col';
+        headRow.append(th);
+    });
+    thead.append(headRow);
+
+    const tbody = createEl('tbody');
+    results.forEach((result, index) => {
+        const row = createEl('tr');
+        row.append(
+            createEl('td', 'leaderboard__cell', String(index + 1)),
+            createEl('td', 'leaderboard__cell', String(result.moves)),
+            createEl('td', 'leaderboard__cell', formatDate(result.date))
+        );
+        tbody.append(row);
+    });
+
+    table.append(thead, tbody);
+    content.append(table);
+}
+
 
 
 startNewGame();
