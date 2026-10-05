@@ -378,3 +378,26 @@ function handleCardClick(card) {
     }, FLIP_BACK_DELAY);
 }
 
+function finishGame() {
+    state.isFinished = true;
+    saveResult(state.moves);
+    showWinModal(state.moves);
+}
+
+/* ============== Новая игра =============== */
+
+function startNewGame() {
+    // Отменяем таймер закрытия несовпавшей пары (если он есть).
+    cancelPendingFlip();
+
+    state.firstCard = null;
+    state.secondCard = null;
+    state.moves = 0;
+    state.pairs = 0;
+    state.isFinished = false;
+    setBoardLocked(false);
+
+    updateStats();
+    renderBoard();
+}
+
