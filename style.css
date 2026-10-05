@@ -282,3 +282,38 @@ body.modal-open {
     margin-top: 22px;
 }
 
+/* --- Таблица лидеров --- */
+
+.leaderboard {
+    width: 100%;
+    margin-top: 12px;
+    border-collapse: collapse;
+    font-variant-numeric: tabular-nums;
+}
+
+.leaderboard th,
+.leaderboard td {
+    padding: 8px 10px;
+    text-align: left;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.leaderboard th {
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: #a7b0d0;
+}
+
+.leaderboard tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.leaderboard td:first-child,
+.leaderboard th:first-child {
+    width: 64px;
+    color: #a7b0d0;
+}
+
+
