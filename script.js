@@ -296,3 +296,26 @@ function setBoardLocked(isLocked) {
     board.classList.toggle('board--locked', isLocked);
 }
 
+/* ================= Игровая логика ====================== */
+
+function flipCard(card) {
+    card.isFlipped = true;
+    card.element.classList.add('card--flipped');
+    card.element.setAttribute('aria-label', 'Открытая карточка: ' + card.value);
+}
+
+function hideCard(card) {
+    card.isFlipped = false;
+    card.element.classList.remove('card--flipped');
+    card.element.setAttribute('aria-label', 'Закрытая карточка');
+}
+
+function cancelPendingFlip() {
+    if (state.closeTimerId !== null) {
+        clearTimeout(state.closeTimerId);
+        state.closeTimerId = null;
+    }
+}
+
+
+
