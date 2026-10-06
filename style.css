@@ -197,7 +197,7 @@ body.modal-open {
 }
 
 .card__face--back {
-    background: linear-gradient(135deg, #3d4a7a, #232b50);
+    background: #0d5c63;
     border: 1px solid rgba(255, 255, 255, 0.14);
 }
 
@@ -219,8 +219,10 @@ body.modal-open {
 }
 
 .card--matched .card__face--front {
-    background: #d9f7e2;
-    box-shadow: inset 0 0 0 2px #46c97a;
+    /*background: #d9f7e2;*/
+    background: #f7e9d9;
+    /*box-shadow: inset 0 0 0 2px #46c97a;*/
+    box-shadow: inset 0 0 0 2px #ff7b47;
 }
 
 /* ============ Модальные окна ================= */
