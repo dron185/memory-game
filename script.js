@@ -1,0 +1,521 @@
+'use strict';
+
+/* ================= Константы ============== */
+
+const CARD_VALUES = ['🐶', '🐱', '🐸', '🦊', '🐼', '🐵', '🦁', '🐷'];
+const TOTAL_PAIRS = CARD_VALUES.length;
+const FLIP_BACK_DELAY = 1000; // мс, в пределах 700–1500
+const STORAGE_KEY = 'memory-game.leaderboard';
+const MAX_RESULTS = 10;
+
+/* =========== Вспомогательные функции для работы с DOM ============ */
+/** Создаёт элемент с классом и текстом */
+function createEl(tagName, className, text) {
+    const element = document.createElement(tagName);
+    if (className) {
+        element.className = className;
+    }
+    if (text !== undefined && text !== null) {
+        element.textContent = text;
+    }
+    return element;
+}
+
+/** Создаёт кнопку. */
+function createButton(text, className, onClick, ariaLabel) {
+    const button = createEl('button', className, text);
+    button.type = 'button';
+    if (ariaLabel) {
+        button.setAttribute('aria-label', ariaLabel);
+    }
+    if (typeof onClick === 'function') {
+        button.addEventListener('click', onClick);
+    }
+    return button;
+}
+
+/* =============== Утилиты ================ */
+/** Перемешивание */
+function shuffleArray(arr) {
+    const copyArr = arr.slice();
+    for (let i = copyArr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        const temp = copyArr[i];
+        copyArr[i] = copyArr[j];
+        copyArr[j] = temp;
+    }
+    return copyArr;
+}
+
+/** Дата в формате ДД.ММ.ГГГГ. */
+function formatDate(timestamp) {
+    const date = new Date(timestamp);
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    return day + '.' + month + '.' + date.getFullYear();
+}
+
+/** Склонение слова «ход». */
+function wordDeclension(count) {
+    const mod10 = count % 10;
+    const mod100 = count % 100;
+    if (mod10 === 1 && mod100 !== 11) {
+        return 'ход';
+    }
+    if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)) {
+        return 'хода';
+    }
+    return 'ходов';
+}
+
+/** =========== Каркас приложения ====================== */
+
+const appRoot = createEl('div', 'wrapper');
+
+/* --- Хедер --- */
+
+const header = createEl('header', 'header');
+const headerTitle = createEl('h1', 'header__title', 'Memory Game');
+const headerActions = createEl('div', 'header__actions');
+const newGameButton = createButton('Новая игра', 'btn btn--primary');
+const leaderboardButton = createButton('Таблица лидеров', 'btn btn--secondary');
+
+headerActions.append(newGameButton, leaderboardButton);
+header.append(headerTitle, headerActions);
+
+/* --- Счётчики --- */
+
+const main = createEl('main', 'main');
+const stats = createEl('div', 'stats');
+
+const statsItem = createEl('div', 'stats__item');
+const statsValue = createEl('span', 'stats__value', '0');
+
+statsItem.append(createEl('span', 'stats__label', 'Ходы:'), statsValue);
+
+const pairsValue = createEl('span', 'stats__value', '0 / ' + TOTAL_PAIRS);
+const pairsStat = createEl('div', 'stats__item');
+pairsStat.append(createEl('span', 'stats__label', 'Найдено пар:'), pairsValue);
+
+stats.append(statsItem, pairsStat);
+
+/* --- Игровое поле --- */
+
+const board = createEl('div', 'board');
+
+main.append(stats, board);
+appRoot.append(header, main);
+document.body.append(appRoot);
+
+/** Блокировка фонового содержимого, пока открыто модальное окно. */
+function setBackgroundInert(isInert) {
+    appRoot.inert = Boolean(isInert);
+}
+
+/* ============== Функция создания модального окна =================== */
+
+/**
+ * Создаёт модальное окно с общим поведением:
+ * закрытие по кнопке, клику по фону и Escape,
+ * блокировка прокрутки и фонового содержимого.
+ */
+
+function createModal(options) {
+    const settings = options || {};
+
+    const overlay = createEl('div', 'modal-overlay');
+    overlay.hidden = true;
+
+    const modal = createEl('div', 'modal');
+    modal.setAttribute('role', 'dialog');
+    modal.setAttribute('aria-modal', 'true');
+
+    const content = createEl('div', 'modal__content');
+    const actions = createEl('div', 'modal__actions');
+
+    const closeButton = createButton('Закрыть', 'btn btn--secondary');
+    actions.append(closeButton);
+
+    modal.append(content, actions);
+    overlay.append(modal);
+    document.body.append(overlay);
+
+    let opened = false;
+    let lastFocused = null;
+
+    function open() {
+        if (opened) {
+            return;
+        }
+        opened = true;
+        lastFocused = document.activeElement;
+        overlay.hidden = false;
+        document.body.classList.add('modal-open');
+        setBackgroundInert(true);
+        closeButton.focus();
+    }
+
+    function close() {
+        if (!opened) {
+            return;
+        }
+        opened = false;
+        overlay.hidden = true;
+        document.body.classList.remove('modal-open');
+        setBackgroundInert(false);
+
+        if (lastFocused && typeof lastFocused.focus === 'function' && document.contains(lastFocused)) {
+            lastFocused.focus();
+        }
+        lastFocused = null;
+
+        if (typeof settings.onClose === 'function') {
+            settings.onClose();
+        }
+    }
+
+    closeButton.addEventListener('click', close);
+
+    overlay.addEventListener('click', (event) => {
+        if (event.target === overlay) {
+            close();
+        }
+    });
+
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && opened) {
+            event.preventDefault();
+            close();
+        }
+    });
+
+    return {
+        overlay: overlay,
+        dialog: modal,
+        content: content,
+        actions: actions,
+        open: open,
+        close: close,
+        isOpen: function () {
+            return opened;
+        }
+    };
+}
+
+/* --- Модальное окно победы --- */
+
+const winModal = createModal();
+
+const winNewGameButton = createButton('Новая игра', 'btn btn--primary', () => {
+    winModal.close();
+    startNewGame();
+});
+winModal.actions.prepend(winNewGameButton);
+
+/* --- Модальное окно таблицы лидеров --- */
+
+const leaderboardModal = createModal();
+
+/* =============== Состояние игры ===================== */
+
+const state = {
+    cards: [],
+    firstCard: null,
+    secondCard: null,
+    isBoardLocked: false,
+    moves: 0,
+    pairs: 0,
+    isFinished: false,
+    closeTimerId: null
+};
+
+/* ============== Создание карточек =================== */
+
+function createCard(value) {
+    const element = createEl('button', 'card');
+    element.type = 'button';
+    element.setAttribute('aria-label', 'Закрытая карточка');
+
+    const inner = createEl('span', 'card__inner');
+    inner.setAttribute('aria-hidden', 'true');
+
+    const backFace = createEl('span', 'card__face card__face--back');
+    const frontFace = createEl('span', 'card__face card__face--front', value);
+
+    inner.append(backFace, frontFace);
+    element.append(inner);
+
+    const card = {
+        value: value,
+        element: element,
+        isFlipped: false,
+        isMatched: false
+    };
+
+    element.addEventListener('click', () => {
+        handleCardClick(card);
+    });
+
+    return card;
+}
+
+/** Колода из 16 значений (каждое — дважды), перемешанная случайно. */
+function createShuffledDeck() {
+    const values = [];
+    CARD_VALUES.forEach((value) => {
+        values.push(value, value);
+    });
+    return shuffleArray(values);
+}
+
+/* ============== Отрисовка поля и счётчиков ====================== */
+
+function renderBoard() {
+    board.replaceChildren();
+    state.cards = [];
+
+    const deck = createShuffledDeck();
+    const fragment = document.createDocumentFragment();
+
+    deck.forEach((value) => {
+        const card = createCard(value);
+        state.cards.push(card);
+        fragment.append(card.element);
+    });
+
+    board.append(fragment);
+}
+
+function updateStats() {
+    statsValue.textContent = String(state.moves);
+    pairsValue.textContent = state.pairs + ' / ' + TOTAL_PAIRS;
+}
+
+function setBoardLocked(isLocked) {
+    state.isBoardLocked = isLocked;
+    board.classList.toggle('board--locked', isLocked);
+}
+
+/* ================= Игровая логика ====================== */
+
+function flipCard(card) {
+    card.isFlipped = true;
+    card.element.classList.add('card--flipped');
+    card.element.setAttribute('aria-label', 'Открытая карточка: ' + card.value);
+}
+
+function hideCard(card) {
+    card.isFlipped = false;
+    card.element.classList.remove('card--flipped');
+    card.element.setAttribute('aria-label', 'Закрытая карточка');
+}
+
+function cancelPendingFlip() {
+    if (state.closeTimerId !== null) {
+        clearTimeout(state.closeTimerId);
+        state.closeTimerId = null;
+    }
+}
+
+function handleCardClick(card) {
+    // Игра завершена — клики ничего не меняют.
+    if (state.isFinished) {
+        return;
+    }
+    // Открыта несовпавшая пара — другие карточки недоступны.
+    if (state.isBoardLocked) {
+        return;
+    }
+    // Повторный клик по открытой или найденной карточке игнорируется.
+    if (card.isFlipped || card.isMatched) {
+        return;
+    }
+
+    flipCard(card);
+
+    // Первая карточка хода.
+    if (state.firstCard === null) {
+        state.firstCard = card;
+        return;
+    }
+
+    // Вторая карточка хода — ход засчитан.
+    const firstCard = state.firstCard;
+    const secondCard = card;
+    state.secondCard = secondCard;
+    state.moves += 1;
+    updateStats();
+
+    if (firstCard.value === secondCard.value) {
+        // Совпадение: карточки остаются открытыми.
+        firstCard.isMatched = true;
+        secondCard.isMatched = true;
+        firstCard.element.classList.add('card--matched');
+        secondCard.element.classList.add('card--matched');
+        firstCard.element.setAttribute('aria-label', 'Найденная пара: ' + firstCard.value);
+        secondCard.element.setAttribute('aria-label', 'Найденная пара: ' + secondCard.value);
+
+        state.firstCard = null;
+        state.secondCard = null;
+        state.pairs += 1;
+        updateStats();
+
+        if (state.pairs === TOTAL_PAIRS) {
+            finishGame();
+        }
+        return;
+    }
+
+    // Несовпадение: закрываем через задержку, поле заблокировано.
+    setBoardLocked(true);
+    state.closeTimerId = window.setTimeout(() => {
+        state.closeTimerId = null;
+        hideCard(firstCard);
+        hideCard(secondCard);
+        state.firstCard = null;
+        state.secondCard = null;
+        setBoardLocked(false);
+    }, FLIP_BACK_DELAY);
+}
+
+function finishGame() {
+    state.isFinished = true;
+    saveResult(state.moves);
+    showWinModal(state.moves);
+}
+
+/* ============== Новая игра =============== */
+
+function startNewGame() {
+    // Отменяем таймер закрытия несовпавшей пары (если он есть).
+    cancelPendingFlip();
+
+    state.firstCard = null;
+    state.secondCard = null;
+    state.moves = 0;
+    state.pairs = 0;
+    state.isFinished = false;
+    setBoardLocked(false);
+
+    updateStats();
+    renderBoard();
+}
+
+/* ===================== Модальное окно победы ========================= */
+
+function showWinModal(moves) {
+    const content = winModal.content;
+    content.replaceChildren();
+
+    const title = createEl('h2', 'modal__title', 'Победа!');
+    const text = createEl('p', 'modal__text', 'Все пары найдены.');
+
+    const score = createEl('p', 'modal__score');
+    const scoreLabel = createEl('span', 'modal__score-label', 'Количество ходов: ');
+    const scoreValue = createEl('strong', 'modal__score-value', String(moves));
+    const scoreSuffix = createEl('span', 'modal__score-suffix', ' ' + wordDeclension(moves));
+    score.append(scoreLabel, scoreValue, scoreSuffix);
+
+    content.append(title, text, score);
+    winModal.open();
+}
+
+/* ==================== Таблица лидеров и localStorage ==================== */
+
+function compareResults(a, b) {
+    if (a.moves !== b.moves) {
+        return a.moves - b.moves;
+    }
+    return a.date - b.date;
+}
+
+function readResults() {
+    try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) {
+            return [];
+        }
+        const parsed = JSON.parse(raw);
+        if (!Array.isArray(parsed)) {
+            return [];
+        }
+        return parsed.filter((item) => {
+            return item && typeof item.moves === 'number' && typeof item.date === 'number';
+        });
+    } catch (error) {
+        return [];
+    }
+}
+
+function writeResults(results) {
+    try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(results));
+    } catch (error) {
+        /* Хранилище недоступно — просто игнорируем. */
+    }
+}
+
+/** Добавляет результат завершённой игры ровно один раз. */
+function saveResult(moves) {
+    const results = readResults();
+    results.push({ moves: moves, date: Date.now() });
+    results.sort(compareResults);
+    writeResults(results.slice(0, MAX_RESULTS));
+}
+
+function renderLeaderboardContent() {
+    const content = leaderboardModal.content;
+    content.replaceChildren();
+    content.append(createEl('h2', 'modal__title', 'Таблица лидеров'));
+
+    const results = readResults().sort(compareResults).slice(0, MAX_RESULTS);
+
+    if (results.length === 0) {
+        content.append(createEl('p', 'modal__text', 'Пока нет результатов'));
+        return;
+    }
+
+    const table = createEl('table', 'leaderboard');
+
+    const thead = createEl('thead');
+    const headRow = createEl('tr');
+    ['Место', 'Ходы', 'Дата'].forEach((label) => {
+        const th = createEl('th', 'leaderboard__head', label);
+        th.scope = 'col';
+        headRow.append(th);
+    });
+    thead.append(headRow);
+
+    const tbody = createEl('tbody');
+    results.forEach((result, index) => {
+        const row = createEl('tr');
+        row.append(
+            createEl('td', 'leaderboard__cell', String(index + 1)),
+            createEl('td', 'leaderboard__cell', String(result.moves)),
+            createEl('td', 'leaderboard__cell', formatDate(result.date))
+        );
+        tbody.append(row);
+    });
+
+    table.append(thead, tbody);
+    content.append(table);
+}
+
+function openLeaderboardModal() {
+    renderLeaderboardContent();
+    leaderboardModal.open();
+}
+
+/* ================ Обработчики кнопок хедера ====================== */
+
+newGameButton.addEventListener('click', () => {
+    startNewGame();
+});
+
+leaderboardButton.addEventListener('click', () => {
+    openLeaderboardModal();
+});
+
+/* ============ Запуск игры ================ */
+
+startNewGame();

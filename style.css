@@ -1,0 +1,331 @@
+/* ========= Базовые стили =============== */
+
+*,
+*::before,
+*::after {
+    padding: 0;
+    margin: 0;
+    border: 0;
+    box-sizing: border-box;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-size: inherit;
+    font-weight: inherit;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    color: #252b42;
+    scroll-behavior: smooth;
+    /*background-color: #bc9f8d;*/
+    background-color: #aaa9a9;
+}
+
+
+body.modal-open {
+    overflow: hidden;
+}
+
+/* ============= Каркас приложения ==================== */
+
+.wrapper {
+    max-width: 880px;
+    margin: 0 auto;
+    padding: 24px 16px 56px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+/* --- Хедер --- */
+
+.header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.header__title {
+    color: #0d5c63;
+    margin: 0;
+    font-size: clamp(1.3rem, 4vw, 1.7rem);
+    letter-spacing: 0.02em;
+    font-weight: 700;
+}
+
+.header__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+/* --- Кнопки --- */
+
+.btn {
+    font: inherit;
+    font-size: 0.95rem;
+    line-height: 1.2;
+    padding: 10px 18px;
+    border-radius: 35px;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: all 0.35s ease 0s;
+    color: #ffffff;
+}
+
+.btn:active {
+    transform: translateY(1px);
+}
+
+.btn:focus-visible {
+    outline: 2px solid #9aa8ff;
+    outline-offset: 2px;
+}
+
+.btn--primary {
+    background: #ff7b47;
+}
+
+.btn--primary:hover {
+    background: #ffffff;
+    color: #ff7b47;
+    border-color: #ff7b47;
+}
+
+.btn--secondary {
+    background: #0d5c63;
+}
+
+.btn--secondary:hover {
+    background: #ffffff;
+    color: #0d5c63;
+    border-color: #0d5c63;
+}
+
+/* --- Основная область --- */
+
+.main {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* --- Счётчики --- */
+
+.stats {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 14px;
+}
+
+.stats__item {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    padding: 10px 18px;
+    border-radius: 12px;
+    background: #38506c;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: #fff;
+}
+
+.stats__label {
+}
+
+.stats__value {
+    font-weight: 700;
+    font-size: 1.05rem;
+}
+
+/* ============== Игровое поле и карточки ================= */
+
+.board {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.board--locked .card {
+    cursor: default;
+}
+
+.card {
+    padding: 0;
+    border: none;
+    background: none;
+    aspect-ratio: 4 / 3;
+    perspective: 700px;
+    cursor: pointer;
+    border-radius: 14px;
+}
+
+.card:focus-visible {
+    outline: 3px solid #9aa8ff;
+    outline-offset: 3px;
+}
+
+.card__inner {
+    position: relative;
+    display: block;
+    width: 100%;
+    height: 100%;
+    transform-style: preserve-3d;
+    transition: transform 0.35s ease;
+}
+
+.card--flipped .card__inner {
+    transform: rotateY(180deg);
+}
+
+.card__face {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 14px;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    user-select: none;
+    font-size: clamp(1.6rem, 7vw, 2.8rem);
+    line-height: 1;
+}
+
+.card__face--back {
+    background: #0d5c63;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+.card__face--back::after {
+    content: "?";
+    font-size: 2rem;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.32);
+}
+
+.card__face--front {
+    background: #f7f9ff;
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    transform: rotateY(180deg);
+}
+
+.card--matched {
+    cursor: default;
+}
+
+.card--matched .card__face--front {
+    /*background: #d9f7e2;*/
+    background: #f7e9d9;
+    /*box-shadow: inset 0 0 0 2px #46c97a;*/
+    box-shadow: inset 0 0 0 2px #ff7b47;
+}
+
+/* ============ Модальные окна ================= */
+
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: rgba(6, 9, 16, 0.72);
+    animation: overlay-in 0.2s ease;
+}
+
+.modal-overlay[hidden] {
+    display: none;
+}
+
+.modal {
+    width: min(480px, 100%);
+    max-height: 85vh;
+    overflow-y: auto;
+    padding: 24px;
+    border-radius: 16px;
+    background: #aaa9a9;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
+    animation: modal-in 0.2s ease;
+}
+
+.modal__title {
+    margin: 0 0 10px;
+    font-size: 1.4rem;
+}
+
+.modal__text {
+    margin: 0 0 10px;
+    color: #252b42;
+}
+
+.modal__score {
+    margin: 14px 0 0;
+    font-size: 1.05rem;
+    color: #252b42;
+}
+
+.modal__score-value {
+    font-size: 1.3rem;
+    color: #252b42;
+}
+
+.modal__actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 22px;
+}
+
+/* --- Таблица лидеров --- */
+
+.leaderboard {
+    width: 100%;
+    margin-top: 12px;
+    border-collapse: collapse;
+    font-variant-numeric: tabular-nums;
+}
+
+.leaderboard th,
+.leaderboard td {
+    padding: 8px 10px;
+    text-align: left;
+    border-bottom: 1px solid #252b42;
+}
+
+.leaderboard th {
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: #252b42;
+}
+
+.leaderboard tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.leaderboard td:first-child,
+.leaderboard th:first-child {
+    width: 64px;
+    color: #252b42;
+}
+
+/* ==================== Анимации ======================= */
+
+@keyframes overlay-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes modal-in {
+    from { opacity: 0; transform: translateY(12px) scale(0.98); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
